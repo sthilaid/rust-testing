@@ -17,6 +17,14 @@ fn make_closure2<'a>() -> impl (FnOnce(&'a str) -> String) {
     add_hello
 }
 
+fn foldl<T: Copy>(array: &[T], base: &T, fun: impl (Fn(&T, &T) -> T)) -> T {
+    let mut acc: T = *base;
+    for x in array {
+        acc = fun(x, &acc);
+    }
+    acc
+}
+
 fn closures_tests() {
     println!("\n--- closures ---\n");
 
@@ -25,4 +33,8 @@ fn closures_tests() {
 
     let f2 = make_closure2();
     println!(" f2(\"world\"): {:?}", f2("world"));
+
+    let a = [1, 2, 3, 4, 5];
+    println!(" foldl(a, sum): {:?}", foldl(&a, &0, |x, a| x + a));
+    println!(" foldl(a, mult): {:?}", foldl(&a, &1, |x, a| x * a));
 }
