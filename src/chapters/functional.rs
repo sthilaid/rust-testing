@@ -25,6 +25,12 @@ fn foldl<T: Copy>(array: &[T], base: &T, fun: impl (Fn(&T, &T) -> T)) -> T {
     acc
 }
 
+fn make_incrementer<'a>(val: &'a mut u8) -> impl FnMut(&'a u8) + 'a {
+    move |n: &'a u8| {
+        *val = *val + n;
+    }
+}
+
 fn closures_tests() {
     println!("\n--- closures ---\n");
 
@@ -35,6 +41,15 @@ fn closures_tests() {
     println!(" f2(\"world\"): {:?}", f2("world"));
 
     let a = [1, 2, 3, 4, 5];
-    println!(" foldl(a, sum): {:?}", foldl(&a, &0, |x, a| x + a));
-    println!(" foldl(a, mult): {:?}", foldl(&a, &1, |x, a| x * a));
+    println!("foldl(a, sum): {:?}", foldl(&a, &0, |x, a| x + a));
+    println!("foldl(a, mult): {:?}", foldl(&a, &1, |x, a| x * a));
+
+    let mut x = 0;
+    {
+        let mut incrementer = make_incrementer(&mut x);
+        incrementer(&10);
+        incrementer(&10);
+        incrementer(&10);
+    }
+    println!("incremented x: {:?}", x);
 }
