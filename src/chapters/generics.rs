@@ -1,3 +1,4 @@
+use num::Float;
 use std::f32::consts::PI;
 use std::fmt::Debug;
 
@@ -9,6 +10,9 @@ pub fn run() {
     generics_and_lifetimes_tests();
     traits_tests();
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// lifetime and generics data and tests
 
 #[derive(Debug)]
 enum Maybe<T> {
@@ -59,6 +63,9 @@ fn generics_and_lifetimes_tests() {
     println!("x: {:?}", get_on_first_some(Maybe::None, Maybe::Some(x)));
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// traits tests
+
 trait Addition {
     fn translate(&self, other: &Self) -> Self;
 }
@@ -72,14 +79,52 @@ impl<T: std::ops::Add<Output = T> + Copy> Addition for Point<T> {
     }
 }
 
-trait FloatTrait {
+#[derive(Debug)]
+struct SphericalPoint<T: Float> {
+    r: T,
+    theta: T,
+}
+
+impl<T: Copy + Float + std::ops::Add<Output = T> + std::ops::Mul<Output = T> + Debug>
+    SphericalPoint<T>
+{
+    fn to_point(&self) -> Point<T> {
+        Point {
+            x: self.r * self.theta.cos(),
+            y: self.r * self.theta.sin(),
+        }
+    }
+
+    fn from_point(p: &Point<T>) -> SphericalPoint<T> {
+        SphericalPoint {
+            r: (p.x * p.x + p.y * p.y).sqrt(),
+            theta: p.y.atan2(p.x),
+        }
+    }
+}
+
+impl<T: Float + std::ops::Add<Output = T> + std::ops::Mul<Output = T> + Copy + Debug> Addition
+    for SphericalPoint<T>
+{
+    fn translate(&self, other: &Self) -> Self {
+        let p1 = self.to_point();
+        let p2 = other.to_point();
+        let p = p1.translate(&p2);
+        SphericalPoint::from_point(&p)
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// implementing here my own trait to cover the used methods
+
+trait MyFloatTrait {
     fn my_cos(&self) -> Self;
     fn my_sin(&self) -> Self;
     fn my_sqrt(&self) -> Self;
     fn my_atan2(&self, v: Self) -> Self;
 }
 
-impl FloatTrait for f32 {
+impl MyFloatTrait for f32 {
     fn my_cos(&self) -> Self {
         self.cos()
     }
@@ -95,13 +140,13 @@ impl FloatTrait for f32 {
 }
 
 #[derive(Debug)]
-struct SphericalPoint<T: FloatTrait> {
+struct SphericalPoint2<T: MyFloatTrait> {
     r: T,
     theta: T,
 }
 
-impl<T: Copy + FloatTrait + std::ops::Add<Output = T> + std::ops::Mul<Output = T> + Debug>
-    SphericalPoint<T>
+impl<T: Copy + MyFloatTrait + std::ops::Add<Output = T> + std::ops::Mul<Output = T> + Debug>
+    SphericalPoint2<T>
 {
     fn to_point(&self) -> Point<T> {
         Point {
@@ -110,24 +155,16 @@ impl<T: Copy + FloatTrait + std::ops::Add<Output = T> + std::ops::Mul<Output = T
         }
     }
 
-    fn from_point(p: &Point<T>) -> SphericalPoint<T> {
-        SphericalPoint {
+    fn from_point(p: &Point<T>) -> Self {
+        Self {
             r: (p.x * p.x + p.y * p.y).my_sqrt(),
             theta: p.y.my_atan2(p.x),
         }
     }
 }
 
-impl<T: FloatTrait + std::ops::Add<Output = T> + std::ops::Mul<Output = T> + Copy + Debug> Addition
-    for SphericalPoint<T>
-{
-    fn translate(&self, other: &Self) -> Self {
-        let p1 = self.to_point();
-        let p2 = other.to_point();
-        let p = p1.translate(&p2);
-        SphericalPoint::from_point(&p)
-    }
-}
+///////////////////////////////////////////////////////////////////////////////
+// test method
 
 fn traits_tests() {
     println!("\n--- traits ---\n");
@@ -137,6 +174,11 @@ fn traits_tests() {
         r: 5.8,
         theta: PI * 0.5,
     };
+    let sp3 = SphericalPoint2 {
+        r: 2.0,
+        theta: PI * 0.5,
+    };
 
     println!("sp: {:?}", sp1.translate(&sp2));
+    println!("sp3: {:?}", SphericalPoint2::from_point(&sp3.to_point()));
 }
