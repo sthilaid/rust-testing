@@ -4,6 +4,7 @@ pub fn run() {
     println!("*****************************************************************");
 
     closures_tests();
+    iterator_tests();
 }
 
 fn make_closure() -> impl (Fn(u8) -> u8) {
@@ -52,4 +53,30 @@ fn closures_tests() {
         incrementer(&10);
     }
     println!("incremented x: {:?}", x);
+}
+
+fn iterator_tests() {
+    println!("\n--- iterators ---\n");
+
+    let v = vec![1, 2, 3, 4, 5];
+    let mut v2 = Vec::new();
+    for x in v.iter() {
+        v2.push(x);
+    }
+    println!("v: {:?}", v);
+    println!("v2: {:?}", v2);
+
+    let mut it = v.iter();
+    let mut x = it.next();
+    loop {
+        match x {
+            Some(v) => v2.push(v),
+            None => break,
+        };
+        x = it.next();
+    }
+    println!("v2: {:?}", v2);
+
+    let v3 = v.iter().map(|x| x * x);
+    println!("v3: {:?}", v3);
 }
