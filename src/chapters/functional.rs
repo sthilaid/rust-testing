@@ -55,6 +55,61 @@ fn closures_tests() {
     println!("incremented x: {:?}", x);
 }
 
+struct Counter {
+    x: u8,
+    max: u8,
+}
+
+impl Counter {
+    fn new(max: u8) -> Counter {
+        Counter { x: 0, max: max }
+    }
+}
+
+impl Iterator for Counter {
+    type Item = u8;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.x < self.max {
+            self.x += 1;
+            Some(self.x)
+        } else {
+            None
+        }
+    }
+}
+
+struct PrimeIter {
+    x: u32,
+}
+
+impl PrimeIter {
+    fn new() -> PrimeIter {
+        PrimeIter { x: 0 }
+    }
+    fn is_prime(x: u32) -> bool {
+        let mut base = x / 2;
+        while base > 1 {
+            if x % base == 0 {
+                break;
+            }
+            base -= 1
+        }
+
+        base == 1
+    }
+}
+
+impl Iterator for PrimeIter {
+    type Item = u32;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.x += 1;
+        while !PrimeIter::is_prime(self.x) {
+            self.x += 1;
+        }
+        Some(self.x)
+    }
+}
+
 fn iterator_tests() {
     println!("\n--- iterators ---\n");
 
@@ -77,6 +132,35 @@ fn iterator_tests() {
     }
     println!("v2: {:?}", v2);
 
-    let v3 = v.iter().map(|x| x * x);
-    println!("v3: {:?}", v3);
+    let squares = v.iter().map(|x| x * x).filter(|x| x % 2 == 0).rev();
+    let squares_vect: Vec<u8> = squares.clone().collect();
+    let squares_list: std::collections::LinkedList<u8> = squares.collect();
+    println!("vect: {:?} list: {:?}", squares_vect, squares_list);
+
+    let more_values = [1, 2, 3, 4, 5, 6, 7, 8];
+    let sum_more_values = more_values.iter().fold(0, |x, a| x + a);
+    let sum_more_values2: u8 = more_values.iter().sum();
+    println!("sums: {:?}, {:?}", sum_more_values, sum_more_values2);
+
+    let strs = ["aaaaa", "bbbbb", "ccccc", "ddddd"];
+
+    // into_iter for iterator taking ownership
+    let heap_strs = strs.iter().map(|s| s.to_string()).collect::<Vec<String>>();
+    let mut bucket: Vec<String> = Vec::new();
+    heap_strs.into_iter().for_each(|s| bucket.push(s));
+    println!("bucket: {:?}", bucket);
+
+    // iter_mut for muting iterator
+    let mut heap_strs = strs.iter().map(|s| s.to_string()).collect::<Vec<String>>();
+    heap_strs.iter_mut().for_each(|s| s.make_ascii_uppercase());
+    println!("heap_strs: {:?}", heap_strs);
+
+    let to_five: Vec<u8> = Counter::new(5).collect();
+    println!("to_five: {:?}", to_five);
+
+    let to_ten: Vec<u8> = Counter::new(10).collect();
+    println!("to_five: {:?}", to_ten);
+
+    let five_primes: Vec<u32> = PrimeIter::new().take(10).collect();
+    println!("five_primes: {:?}", five_primes);
 }
