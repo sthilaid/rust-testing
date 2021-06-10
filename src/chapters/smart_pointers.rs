@@ -93,5 +93,5 @@ fn data_structure_tests() {
 
     let vlist: Vec<u8> = list.iter().collect();
     let bvlist: Vec<u8> = list.back_iter().collect();
-    println!("vlist {:?} bvlist: {:?}", vlist, bvlist);
+    println!("vlist: {:?} bvlist: {:?}", vlist, bvlist);
 }

@@ -1,5 +1,6 @@
 mod chapters {
     pub mod collections;
+    pub mod concurency;
     pub mod functional;
     pub mod generics;
     pub mod smart_pointers;
@@ -11,4 +12,5 @@ fn main() {
     chapters::generics::run();
     chapters::functional::run();
     chapters::smart_pointers::run();
+    chapters::concurency::run();
 }
